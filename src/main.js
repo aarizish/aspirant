@@ -67,6 +67,39 @@ function updateDifficultyPreference(newDifficulty) {
 	saveDifficultyPreference(newDifficulty);
 }
 
+function addButton(script, spot, role) {
+	const btn = add([
+		rect(width() * 0.4, height() * 0.1, { radius: 8 }),
+		pos(spot),
+		area(),
+		scale(1),
+		anchor("center"),
+		outline(4),
+	]);
+
+	btn.add([
+		text(script, {size: width() * 0.02}),
+		anchor("center"),
+		color(0, 0, 0),
+	]);
+
+	btn.onHoverUpdate(() => {
+		const t = time() * 10;
+		btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
+		btn.scale = vec2(1.2);
+		setCursor("pointer");
+	});
+
+	btn.onHoverEnd(() => {
+		btn.scale = vec2(1);
+		btn.color = rgb();
+	});
+
+	btn.onClick(role);
+
+	return btn;
+}
+
 const playBackgroundAudio = () => {
 	if (!backgroundAudioIsPlaying && !forceBackgroundAudioPause) {
 		backgroundAudio = play("backdrop", { volume: 1, loop: true });
@@ -97,73 +130,33 @@ function shareExperience() {
     const appLink = "https://aarizish.itch.io/aspirant";
     const fullMessage = `${shareMessage}\n\nPlay here: ${appLink}`;
 
-    if (window.Android && window.Android.share) {
-        window.Android.share(fullMessage);
+    if (navigator.share) {
+        navigator.share({
+            title: 'Aspirant - Homework & Distraction',
+            text: fullMessage,
+            url: appLink,
+        })
+        .then(() => console.log('App shared successfully'))
+        .catch((error) => console.error('Error sharing app:', error));
     } else {
-        if (navigator.share) {
-            navigator.share({
-                title: 'Aspirant - Homework & Distraction',
-                text: fullMessage,
-                url: appLink,
-            })
-            .then(() => console.log('App shared successfully'))
-            .catch((error) => console.error('Error sharing app:', error));
-        } else {
-            const subject = encodeURIComponent("Check out Aspirant - Homework & Distraction");
-            const body = encodeURIComponent(fullMessage);
-            const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
-            window.location.href = mailtoLink;
-        }
+        const subject = encodeURIComponent("Check out Aspirant - Homework & Distraction");
+        const body = encodeURIComponent(fullMessage);
+        const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+        window.location.href = mailtoLink;
     }
 }
 
-
 scene("LaunchViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Aspirant - Homework & Distraction", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 100),
+		text("Aspirant - Homework & Distraction", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.3),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Launch", vec2(screenCenter.x, screenCenter.y), () => go("MainViewController"));
-	addButton("Preferences", vec2(screenCenter.x, screenCenter.y + 100), () => go("PreferencesViewController"));
-	addButton("Shut Down", vec2(screenCenter.x, screenCenter.y + 200), () => {
+	addButton("Launch", vec2(width() / 2, height() * 0.45), () => go("MainViewController"));
+	addButton("Preferences", vec2(width() / 2, height() * 0.55), () => go("PreferencesViewController"));
+	addButton("Shut Down", vec2(width() / 2, height() * 0.65), () => {
 		if (window.Android && window.Android.closeApp) {
 			window.Android.closeApp();
 		} else {
@@ -173,383 +166,175 @@ scene("LaunchViewController", () => {
 });
 
 scene("PreferencesViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Preferences", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 300),
+		text("Preferences", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.2),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Profile", vec2(screenCenter.x, screenCenter.y - 200), () => go("ProfileViewController"));
-	addButton("Difficulty", vec2(screenCenter.x, screenCenter.y - 100), () => go("DifficultyViewController"));
-	addButton("Sound", vec2(screenCenter.x, screenCenter.y), () => go("SoundViewController"));
-	addButton("Sharing", vec2(screenCenter.x, screenCenter.y + 100), () => shareExperience());
-	addButton("Credits", vec2(screenCenter.x, screenCenter.y + 200), () => go("CreditsViewController"));
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 300), () => go("LaunchViewController"));
+	addButton("Profile", vec2(width() / 2, height() * 0.35), () => go("ProfileViewController"));
+	addButton("Difficulty", vec2(width() / 2, height() * 0.45), () => go("DifficultyViewController"));
+	addButton("Sound", vec2(width() / 2, height() * 0.55), () => go("SoundViewController"));
+	addButton("Sharing", vec2(width() / 2, height() * 0.65), () => shareExperience());
+	addButton("Credits", vec2(width() / 2, height() * 0.75), () => go("CreditsViewController"));
+	addButton("Central Hub", vec2(width() / 2, height() * 0.85), () => go("LaunchViewController"));
 });
 
 scene("ProfileViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Choose Your Identity!", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 200),
+		text("Choose Your Identity!", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.2),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
 	add([
-		text("Choose your aspirant to begin the journey of focus and knowledge", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 100),
+		text("Choose your aspirant to begin the journey of focus and knowledge", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.35),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Boy", vec2(screenCenter.x, screenCenter.y), () => {
+	addButton("Boy", vec2(width() / 2, height() * 0.45), () => {
 		updateCharacterPreference('male'); debug.log("You are ready to begin your journey.")
 	});
-	addButton("Girl", vec2(screenCenter.x, screenCenter.y + 100), () => {
+	addButton("Girl", vec2(width() / 2, height() * 0.55), () => {
 		updateCharacterPreference('female'); debug.log("You are ready to begin your journey.")
 	});
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 200), () => go("LaunchViewController"));
+	addButton("Central Hub", vec2(width() / 2, height() * 0.65), () => go("LaunchViewController"));
 });
 
 scene("SoundViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Audio Settings", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 200),
+		text("Audio Settings", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.2),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
 	add([
-		text("Toggle background music to suit your mood", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 100),
+		text("Toggle background music to suit your mood", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.35),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("On", vec2(screenCenter.x, screenCenter.y), () => {
+	addButton("On", vec2(width() / 2, height() * 0.45), () => {
 		forceBackgroundAudioPause = false;
 		playBackgroundAudio();
 	});
 
-	addButton("Off", vec2(screenCenter.x, screenCenter.y + 100), () => {
+	addButton("Off", vec2(width() / 2, height() * 0.55), () => {
 		forceBackgroundAudioPause = true;
 		pauseBackgroundAudio();
 	});
 
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 200), () => {
+	addButton("Central Hub", vec2(width() / 2, height() * 0.65), () => {
 		go("LaunchViewController");
 	});
 });
 
 scene("DifficultyViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Choose Your Challenge!", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 300),
+		text("Choose Your Challenge!", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.2),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
 	add([
-		text("Select the difficulty that suits your skills", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 200),
+		text("Select the difficulty that suits your skills", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.35),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Easy", vec2(screenCenter.x, screenCenter.y - 100), () => {
+	addButton("Easy", vec2(width() / 2, height() * 0.45), () => {
 		updateDifficultyPreference(7); debug.log("Your challenge has been set. Proceed!")
 	});
-	addButton("Medium", vec2(screenCenter.x, screenCenter.y), () => {
+	addButton("Medium", vec2(width() / 2, height() * 0.55), () => {
 		updateDifficultyPreference(14); debug.log("Your challenge has been set. Proceed!")
 	});
-	addButton("Hard", vec2(screenCenter.x, screenCenter.y + 100), () => {
+	addButton("Hard", vec2(width() / 2, height() * 0.65), () => {
 		updateDifficultyPreference(21); debug.log("Your challenge has been set. Proceed!")
 	});
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 200), () => go("LaunchViewController"));
+	addButton("Central Hub", vec2(width() / 2, height() * 0.75), () => go("LaunchViewController"));
 });
 
 scene("CreditsViewController", () => {
-	const screenCenter = center();
-
 	add([
-		text("Credits!", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 300),
+		text("Credits!", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.2),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
 	add([
-		text("Developer: Aarizish", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 200),
+		text("Developer: Aarizish", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.35),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 	add([
-		text("Sound Effects by Pixabay", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 100),
+		text("Sound Effects by Pixabay", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.45),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 	add([
-		text("Background Tune: BEATBOX 02 (Halal Music) by Azad Chaiwala", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y + 100),
+		text("Background Tune: BEATBOX 02 (Halal Music) by Azad Chaiwala", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.55),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 	add([
-		text("Inspired by Coder Coffee & Bugs", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y),
+		text("Inspired by Coder Coffee & Bugs", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.65),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 	add([
-		text("Sprites designed by pikisuperstar and studiogstock / Freepik.", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y + 200),
+		text("Sprites designed by pikisuperstar and studiogstock / Freepik.", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.75),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 300), () => go("LaunchViewController"));
+	addButton("Central Hub", vec2(width() / 2, height() * 0.85), () => go("LaunchViewController"));
 });
 
 scene("RetryViewController", ({score}) => {
-	const screenCenter = center();
-
 	add([
-		text("Session Ended!", { size: 48 }),
-		pos(screenCenter.x, screenCenter.y - 200),
+		text("Session Ended!", { size: width() * 0.03 }),
+		pos(width() / 2, height() * 0.25),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
 	add([
-		text("Achievement: " + score + " Points", { size: 28 }),
-		pos(screenCenter.x, screenCenter.y - 100),
+		text("Achievement: " + score + " Points", { size: width() * 0.02 }),
+		pos(width() / 2, height() * 0.35),
 		anchor("center"),
 		color(255, 255, 255),
 	]);
 
-	function addButton(script, spot, role) {
-		const btn = add([
-			rect(360, 80, { radius: 8 }),
-			pos(spot),
-			area(),
-			scale(1),
-			anchor("center"),
-			outline(4),
-		]);
-	
-		btn.add([
-			text(script),
-			anchor("center"),
-			color(0, 0, 0),
-		]);
-	
-		btn.onHoverUpdate(() => {
-			const t = time() * 10;
-			btn.color = hsl2rgb((t / 10) % 1, 0.6, 0.7);
-			btn.scale = vec2(1.2);
-			setCursor("pointer");
-		});
-	
-		btn.onHoverEnd(() => {
-			btn.scale = vec2(1);
-			btn.color = rgb();
-		});
-	
-		btn.onClick(role);
-	
-		return btn;
-	}
-
-	addButton("Retry", vec2(screenCenter.x, screenCenter.y), () => go("MainViewController"));
-	addButton("Central Hub", vec2(screenCenter.x, screenCenter.y + 100), () => go("LaunchViewController"));
+	addButton("Retry", vec2(width() / 2, height() * 0.45), () => go("MainViewController"));
+	addButton("Central Hub", vec2(width() / 2, height() * 0.55), () => go("LaunchViewController"));
 });
 
 scene("MainViewController", () => {
-	let SPEED = 620;
-	let ESPEED = 2;
+	let SPEED = Math.min(width(), height()) / 1.25;
+	let ESPEED = Math.min(width(), height()) / 300;
 	let SCORE = 0;
 
+	const playerScale = Math.min(width(), height()) / 4500;
+	let activeDirection = null;
 	let scoreView;
 
 	function addButton(script, spot, role) {
 		const btn = add([
-			rect(140, 60, { radius: 8 }),
+			rect(120, 40, { radius: 8 }),
 			pos(spot),
 			area(),
 			scale(1),
@@ -559,7 +344,7 @@ scene("MainViewController", () => {
 		]);
 	
 		btn.add([
-			text(script),
+			text(script, { size: width() * 0.02 }),
 			anchor("center"),
 			color(0, 0, 0),
 		]);
@@ -581,57 +366,58 @@ scene("MainViewController", () => {
 		return btn;
 	}
 
+	function addDirectionalButton(direction, position, movement) {
+		addButton(direction, position, () => {
+			activeDirection = movement;
+		});
+	}
+
 	const buttonOffset = 20;
 	const screenWidth = width();
 	const screenHeight = height();
+	const spawnScale = Math.min(width(), height()) / 8000;
 
-	addButton("Up", vec2(buttonOffset + 160, screenHeight - 160), () => {
-		onMouseDown(() => {
-			player.move(0, -SPEED);
-		});
-	});
-	addButton("Down", vec2(buttonOffset + 160, screenHeight - 80), () => {
-		onMouseDown(() => {
-			player.move(0, SPEED);
-		});
-	});
-	addButton("Left", vec2(screenWidth - 160, screenHeight - 160), () => {
-		onMouseDown(() => {
-			player.move(-SPEED, 0);
-		});
-	});
-	addButton("Right", vec2(screenWidth - 160, screenHeight - 80), () => {
-		onMouseDown(() => {
-			player.move(SPEED, 0);
-		});
-	});
+	addDirectionalButton("Up", vec2(buttonOffset + 50, screenHeight - 160), { x: 0, y: -SPEED });
+	addDirectionalButton("Down", vec2(buttonOffset + 50, screenHeight - 80), { x: 0, y: SPEED });
+	addDirectionalButton("Left", vec2(screenWidth - 210, screenHeight - 80), { x: -SPEED, y: 0 });
+	addDirectionalButton("Right", vec2(screenWidth - 70, screenHeight - 80), { x: SPEED, y: 0 });
 
 	const player = add([
 		sprite(getCharacterPreference()),
 		pos(120, 80),
 		area(),
-		scale(0.2),
-	])
+		scale(playerScale),
+	]);
+
+	onUpdate(() => {
+		if (activeDirection) {
+			player.move(activeDirection.x, activeDirection.y);
+		}
+	});
+
+	onMouseRelease(() => {
+		activeDirection = null;
+	});
 
 	onKeyDown("left", () => {
 		playBackgroundAudio();
 		player.move(-SPEED, 0);
-	})
+	});
 
 	onKeyDown("right", () => {
 		playBackgroundAudio();
 		player.move(SPEED, 0);
-	})
+	});
 
 	onKeyDown("up", () => {
 		playBackgroundAudio();
 		player.move(0, -SPEED);
-	})
+	});
 
 	onKeyDown("down", () => {
 		playBackgroundAudio();
 		player.move(0, SPEED);
-	})
+	});
 
 	player.onCollide("enemy", () => {
 		shake(120);
@@ -659,10 +445,10 @@ scene("MainViewController", () => {
 
 			let c = add([
 				sprite("phone"),
-				pos(x, y),
+				pos(rand(0, width()), height()),
 				area(),
-				scale(0.13),
-				"enemy"
+				scale(spawnScale),
+				"enemy",
 			]);
 
 			c.onUpdate(() => {
@@ -677,12 +463,12 @@ scene("MainViewController", () => {
 			sprite("book"),
 			pos(x, y),
 			area(),
-			scale(0.13),
-			"book"
+			scale(spawnScale),
+			"book",
 		]);
 
 		c.onUpdate(() => {
-			c.moveTo(c.pos.x, c.pos.y - ESPEED)
+			c.moveTo(c.pos.x, c.pos.y - ESPEED);
 		});
 
 		if (ESPEED < parseInt(getDifficultyPreference())) {
@@ -695,14 +481,15 @@ scene("MainViewController", () => {
 			destroy(scoreView);
 		}
 		scoreView = add([
-			text("Progress: " + SCORE),
+			text("Progress: " + SCORE, { size: width() * 0.02 }),
 			scale(1),
 			pos(width() - 351, 21),
 			color(255, 255, 255),
-		])
-	}
+		]);
+	};
 
 	displayScore();
 });
+
 
 commence();
